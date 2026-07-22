@@ -135,7 +135,6 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
           </>
         )}
       </div>
-      <p className="mt-1 text-xs text-stone-500">(Incl. of all taxes)</p>
 
       <ul className="mt-6 space-y-3">
         {SERVICE_HIGHLIGHTS.map((item) => (

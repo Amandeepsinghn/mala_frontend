@@ -2,7 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { ProductGrid } from "@/components/product/product-grid";
 import { getCategories, getFeaturedProducts } from "@/lib/api";
-import { SITE_NAME } from "@/lib/constants";
+import {
+  CONTACT_ADDRESS,
+  CONTACT_PHONE,
+  GOOGLE_MAPS_URL,
+  INSTAGRAM_HANDLE,
+  INSTAGRAM_URL,
+  SITE_NAME,
+} from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +85,63 @@ export default async function HomePage() {
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <ProductGrid products={featuredProducts} title="Featured products" />
+        </div>
+      </section>
+
+      <section className="border-t border-stone-200 bg-stone-50">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-semibold uppercase tracking-wide text-stone-900">
+            Visit us
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-stone-600">
+            Visit our showroom in Kirti Nagar or reach out on Instagram and
+            phone for enquiries and custom orders.
+          </p>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            <div className="rounded-lg border border-stone-200 bg-white p-6">
+              <p className="text-sm font-semibold text-stone-900">Location</p>
+              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                {CONTACT_ADDRESS}
+              </p>
+              <a
+                href={GOOGLE_MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block text-sm font-medium text-stone-900 underline underline-offset-4 hover:text-stone-700"
+              >
+                Get directions
+              </a>
+            </div>
+
+            <div className="rounded-lg border border-stone-200 bg-white p-6">
+              <p className="text-sm font-semibold text-stone-900">Instagram</p>
+              <p className="mt-2 text-sm text-stone-600">
+                Follow us for new collections, designs, and updates.
+              </p>
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block text-sm font-semibold text-stone-900 hover:underline"
+              >
+                {INSTAGRAM_HANDLE}
+              </a>
+            </div>
+
+            <div className="rounded-lg border border-stone-200 bg-white p-6">
+              <p className="text-sm font-semibold text-stone-900">Phone</p>
+              <p className="mt-2 text-sm text-stone-600">
+                Call or WhatsApp us for product details and orders.
+              </p>
+              <a
+                href={`tel:+91${CONTACT_PHONE}`}
+                className="mt-4 inline-block text-lg font-semibold tracking-wide text-stone-900 hover:underline"
+              >
+                +91 {CONTACT_PHONE}
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </>
