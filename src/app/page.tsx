@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProductGrid } from "@/components/product/product-grid";
-import { Button } from "@/components/ui/button";
 import { getCategories, getFeaturedProducts } from "@/lib/api";
+import { SITE_NAME } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -14,47 +14,37 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative bg-stone-900 text-white">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-widest text-amber-400">
-              New collection
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
-              Furniture that feels like home
-            </h1>
-            <p className="mt-4 max-w-lg text-lg text-stone-300">
-              Discover thoughtfully designed pieces — sofas, tables, and chairs
-              crafted for modern living.
-            </p>
-            <div className="mt-8 flex gap-4">
-              <Link href="/products">
-                <Button size="lg" variant="secondary">
-                  Shop all
-                </Button>
-              </Link>
-              <Link href="/categories/sofas">
-                <Button size="lg" variant="outline" className="border-stone-600 text-white hover:bg-stone-800">
-                  Browse sofas
-                </Button>
-              </Link>
-            </div>
-          </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-            <Image
-              src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1200&q=80"
-              alt="Modern living room"
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </div>
+      <section className="relative min-h-[70vh] overflow-hidden sm:min-h-[80vh]">
+        <Image
+          src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1920&q=80"
+          alt="Modern living room with curated furniture"
+          fill
+          className="object-cover object-center"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-[#f5f1eb]/20" />
+
+        <div className="relative mx-auto flex min-h-[70vh] max-w-7xl flex-col items-center justify-center px-4 py-24 text-center sm:min-h-[80vh] sm:px-6 lg:px-8">
+          <p className="text-xs font-medium uppercase tracking-[0.35em] text-stone-900 sm:text-sm">
+            {SITE_NAME} · Crafted for your home
+          </p>
+          <h1 className="mt-6 max-w-4xl text-4xl font-bold uppercase leading-tight tracking-tight text-stone-900 sm:text-5xl md:text-6xl lg:text-7xl">
+            Furniture that feels like home
+          </h1>
+          <Link
+            href="/products"
+            className="mt-10 rounded-full bg-stone-900 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-800"
+          >
+            Explore collection
+          </Link>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-semibold text-stone-900">Shop by category</h2>
+        <h2 className="text-2xl font-semibold uppercase tracking-wide text-stone-900">
+          Shop by category
+        </h2>
         {categories.length === 0 ? (
           <p className="mt-8 text-stone-500">
             No categories yet. Add them in the backend admin.

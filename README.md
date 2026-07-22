@@ -38,6 +38,7 @@ The frontend talks to these backend endpoints:
 | Product detail | `GET /api/v1/products/{slug}` |
 | Cart | `GET /api/v1/cart` |
 | Add to cart | `POST /api/v1/cart/items` |
+| Product inquiry | `POST /api/v1/enquiries` |
 
 When the API returns empty data or is unreachable, the app falls back to mock data in `src/lib/mock-data.ts`.
 

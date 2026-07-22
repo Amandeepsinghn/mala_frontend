@@ -3,13 +3,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
+import { cn, formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 
 interface AddToCartButtonProps {
   product: Product;
+  size?: "sm" | "md" | "lg";
+  showPrice?: boolean;
+  className?: string;
 }
 
-export function AddToCartButton({ product }: AddToCartButtonProps) {
+export function AddToCartButton({
+  product,
+  size = "lg",
+  showPrice = true,
+  className,
+}: AddToCartButtonProps) {
   const { addItem } = useCart();
   const [loading, setLoading] = useState(false);
 
@@ -22,18 +31,22 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
     }
   }
 
+  const label = showPrice
+    ? `Add to cart ${formatPrice(product.price, product.currency)}`
+    : "Add to cart";
+
   return (
     <Button
-      size="lg"
-      className="w-full"
-      disabled={!product.inStock || loading}
+      size={size}
+      className={cn(
+        "w-full rounded-md bg-stone-900 text-white hover:bg-stone-800",
+        size === "lg" && "py-3.5 text-base",
+        className,
+      )}
+      disabled={loading}
       onClick={handleAdd}
     >
-      {loading
-        ? "Adding..."
-        : product.inStock
-          ? "Add to cart"
-          : "Out of stock"}
+      {loading ? "Adding..." : label}
     </Button>
   );
 }

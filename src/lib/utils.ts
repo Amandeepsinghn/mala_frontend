@@ -15,3 +15,11 @@ export function parseDecimal(value: string | null | undefined): number {
   const parsed = Number.parseFloat(value);
   return Number.isNaN(parsed) ? 0 : parsed;
 }
+
+export function getDiscountPercent(
+  price: number,
+  compareAtPrice?: number | null,
+): number {
+  if (!compareAtPrice || compareAtPrice <= price) return 0;
+  return Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
+}

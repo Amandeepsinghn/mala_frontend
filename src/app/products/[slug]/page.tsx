@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AddToCartButton } from "@/components/product/add-to-cart-button";
-import { Badge } from "@/components/ui/badge";
+import { ProductDetailPanel } from "@/components/product/product-detail-panel";
+import { ProductGallery } from "@/components/product/product-gallery";
 import { getProductBySlug } from "@/lib/api";
-import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +30,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <nav className="mb-8 text-sm text-stone-500">
         <Link href="/products" className="hover:text-stone-900">
           Products
@@ -48,44 +46,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <span className="text-stone-900">{product.name}</span>
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-2">
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-stone-100">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-cover"
-            priority
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-medium uppercase tracking-wide text-stone-500">
-              {product.category}
-            </p>
-            {product.inStock ? (
-              <Badge variant="success">In stock</Badge>
-            ) : (
-              <Badge variant="warning">Out of stock</Badge>
-            )}
-          </div>
-
-          <h1 className="mt-2 text-3xl font-semibold text-stone-900">
-            {product.name}
-          </h1>
-          <p className="mt-4 text-2xl font-semibold text-stone-900">
-            {formatPrice(product.price, product.currency)}
-          </p>
-          <p className="mt-6 leading-relaxed text-stone-600">
-            {product.description}
-          </p>
-
-          <div className="mt-8">
-            <AddToCartButton product={product} />
-          </div>
-        </div>
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
+        <ProductGallery images={product.images} alt={product.name} />
+        <ProductDetailPanel product={product} />
       </div>
     </div>
   );

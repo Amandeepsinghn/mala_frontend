@@ -35,7 +35,7 @@ export function Footer() {
                   href="/login"
                   className="text-sm text-stone-600 hover:text-stone-900"
                 >
-                  Sign in
+                  Log in
                 </Link>
               </li>
               <li>

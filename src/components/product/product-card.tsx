@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AddToCartButton } from "@/components/product/add-to-cart-button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
@@ -12,8 +13,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const image = product.images[0];
 
   return (
-    <Link href={`/products/${product.slug}`} className="group">
-      <article className="overflow-hidden rounded-lg border border-stone-200 bg-white transition-shadow hover:shadow-md">
+    <article className="flex h-full flex-col overflow-hidden rounded-lg border border-stone-200 bg-white transition-shadow hover:shadow-md">
+      <Link href={`/products/${product.slug}`} className="group block">
         <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
           {image ? (
             <Image
@@ -34,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-4 pb-3">
           {product.category && (
             <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
               {product.category}
@@ -47,7 +48,10 @@ export function ProductCard({ product }: ProductCardProps) {
             {formatPrice(product.price, product.currency)}
           </p>
         </div>
-      </article>
-    </Link>
+      </Link>
+      <div className="mt-auto px-4 pb-4">
+        <AddToCartButton product={product} size="sm" showPrice={false} />
+      </div>
+    </article>
   );
 }
