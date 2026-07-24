@@ -90,7 +90,7 @@ function ImageLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={`${alt} image viewer`}
@@ -99,7 +99,7 @@ function ImageLightbox({
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+        className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-4 sm:top-4"
         aria-label="Close image viewer"
       >
         <svg
@@ -127,7 +127,7 @@ function ImageLightbox({
               event.stopPropagation();
               onIndexChange(index === 0 ? images.length - 1 : index - 1);
             }}
-            className="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:left-6"
+            className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:left-6 sm:h-11 sm:w-11"
             aria-label="Previous image"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -138,7 +138,7 @@ function ImageLightbox({
               event.stopPropagation();
               onIndexChange(index === images.length - 1 ? 0 : index + 1);
             }}
-            className="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6"
+            className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:h-11 sm:w-11"
             aria-label="Next image"
           >
             <ChevronRight className="h-6 w-6" />
@@ -147,7 +147,7 @@ function ImageLightbox({
       )}
 
       <div
-        className="relative mx-4 h-[min(85vh,100%)] w-full max-w-5xl sm:mx-12"
+        className="relative h-[70vh] w-full max-w-5xl sm:h-[85vh] sm:mx-12"
         onClick={(event) => event.stopPropagation()}
       >
         <Image
@@ -165,6 +165,46 @@ function ImageLightbox({
           {index + 1} / {images.length}
         </p>
       )}
+    </div>
+  );
+}
+
+function ThumbnailStrip({
+  images,
+  alt,
+  activeIndex,
+  onSelect,
+  className,
+}: {
+  images: string[];
+  alt: string;
+  activeIndex: number;
+  onSelect: (index: number) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex gap-2 overflow-x-auto pb-1", className)}>
+      {images.map((image, index) => (
+        <button
+          key={`${image}-${index}`}
+          type="button"
+          onClick={() => onSelect(index)}
+          className={cn(
+            "relative h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-stone-100 sm:h-20 sm:w-20",
+            activeIndex === index ? "border-stone-900" : "border-transparent",
+          )}
+          aria-label={`View image ${index + 1}`}
+          aria-current={activeIndex === index}
+        >
+          <Image
+            src={image}
+            alt={`${alt} thumbnail ${index + 1}`}
+            fill
+            className="object-cover object-center"
+            sizes="80px"
+          />
+        </button>
+      ))}
     </div>
   );
 }
@@ -193,52 +233,80 @@ export function ProductGallery({ images, alt }: ProductGalleryProps) {
   }
 
   return (
-    <div className="w-full">
-      {hasMultiple && (
-        <div className="mb-3 flex gap-2 overflow-x-auto pb-1 sm:hidden">
-          {galleryImages.map((image, index) => (
-            <button
-              key={`${image}-${index}-mobile`}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              className={cn(
-                "relative h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-stone-100",
-                activeIndex === index
-                  ? "border-stone-900"
-                  : "border-transparent",
-              )}
-              aria-label={`View image ${index + 1}`}
-            >
+    <div className="w-full min-w-0">
+      {/* Mobile: main image full width, thumbs below */}
+      <div className="lg:hidden">
+        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-stone-100">
+          <button
+            type="button"
+            onClick={() => openLightbox(activeIndex)}
+            className="absolute inset-0 z-0 cursor-zoom-in"
+            aria-label="Open full size image"
+          >
+            <span className="relative block h-full w-full">
               <Image
-                src={image}
-                alt={`${alt} thumbnail ${index + 1}`}
+                src={galleryImages[activeIndex]}
+                alt={`${alt} - image ${activeIndex + 1}`}
                 fill
                 className="object-cover object-center"
-                sizes="64px"
+                priority
+                sizes="100vw"
               />
-            </button>
-          ))}
-        </div>
-      )}
+            </span>
+          </button>
 
+          {hasMultiple && (
+            <>
+              <button
+                type="button"
+                onClick={showPrevious}
+                className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-stone-900 shadow-md"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={showNext}
+                className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-stone-900 shadow-md"
+                aria-label="Next image"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {hasMultiple && (
+          <ThumbnailStrip
+            images={galleryImages}
+            alt={alt}
+            activeIndex={activeIndex}
+            onSelect={setActiveIndex}
+            className="mt-3"
+          />
+        )}
+      </div>
+
+      {/* Desktop: side thumbs + main image */}
       <div
         className={cn(
-          "grid w-full gap-3",
+          "hidden w-full gap-3 lg:grid",
           hasMultiple
-            ? "grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[80px_minmax(0,1fr)]"
+            ? "grid-cols-[80px_minmax(0,1fr)]"
             : "grid-cols-1",
         )}
       >
         {hasMultiple && (
           <div
-            className="hidden min-h-0 gap-2 self-stretch sm:grid"
+            className="grid min-h-0 gap-2 self-stretch"
             style={{
               gridTemplateRows: `repeat(${galleryImages.length}, minmax(0, 1fr))`,
             }}
           >
             {galleryImages.map((image, index) => (
               <button
-                key={`${image}-${index}`}
+                key={`${image}-${index}-desktop`}
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={cn(
@@ -262,7 +330,7 @@ export function ProductGallery({ images, alt }: ProductGalleryProps) {
           </div>
         )}
 
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-stone-100 sm:aspect-square">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-stone-100">
           <button
             type="button"
             onClick={() => openLightbox(activeIndex)}
@@ -276,7 +344,7 @@ export function ProductGallery({ images, alt }: ProductGalleryProps) {
                 fill
                 className="object-cover object-center"
                 priority
-                sizes="(max-width: 1024px) 100vw, 45vw"
+                sizes="45vw"
               />
             </span>
           </button>

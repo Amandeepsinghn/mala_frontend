@@ -30,23 +30,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <nav className="mb-8 text-sm text-stone-500">
+    <div className="mx-auto w-full max-w-7xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-12 lg:px-8">
+      <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-stone-500 sm:mb-8">
         <Link href="/products" className="hover:text-stone-900">
           Products
         </Link>
-        <span className="mx-2">/</span>
+        <span>/</span>
         <Link
           href={`/categories/${product.categorySlug}`}
           className="hover:text-stone-900"
         >
           {product.category}
         </Link>
-        <span className="mx-2">/</span>
-        <span className="text-stone-900">{product.name}</span>
+        <span>/</span>
+        <span className="min-w-0 break-words text-stone-900">{product.name}</span>
       </nav>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
+      <div className="grid w-full min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
         <ProductGallery images={product.images} alt={product.name} />
         <ProductDetailPanel product={product} />
       </div>

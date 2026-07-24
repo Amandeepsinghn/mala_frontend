@@ -13,6 +13,7 @@ interface ProductDetailPanelProps {
 const SERVICE_HIGHLIGHTS = [
   "67 point quality inspection before delivery",
   "2 year warranty, no questions asked",
+  "Product is customizable according to customer needs",
 ] as const;
 
 const TRUST_BADGES = [
@@ -61,7 +62,9 @@ function AccordionItem({
         <span className="text-lg leading-none text-stone-500">{isOpen ? "−" : "+"}</span>
       </button>
       {isOpen && (
-        <div className="pb-4 text-sm leading-relaxed text-stone-600">{content}</div>
+        <div className="pb-4 text-sm leading-relaxed break-words text-stone-600">
+          {content}
+        </div>
       )}
     </div>
   );
@@ -147,8 +150,8 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
   ];
 
   return (
-    <div className="flex flex-col">
-      <h1 className="font-serif text-2xl font-semibold leading-snug text-stone-900 sm:text-3xl lg:text-4xl">
+    <div className="flex min-w-0 flex-col overflow-hidden">
+      <h1 className="font-serif text-2xl font-semibold leading-snug break-words text-stone-900 sm:text-3xl lg:text-4xl">
         {product.name}
       </h1>
 
@@ -189,25 +192,25 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
 
       <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
         <p className="text-sm font-medium text-stone-900">Visit our factory</p>
-        <p className="mt-1 text-sm text-stone-600">
+        <p className="mt-1 text-sm leading-relaxed break-words text-stone-600">
           See how our furniture is crafted in person at our factory.
         </p>
       </div>
 
       <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
         <p className="text-sm font-medium text-stone-900">Contact us for product</p>
-        <p className="mt-1 text-sm text-stone-600">
+        <p className="mt-1 text-sm leading-relaxed break-words text-stone-600">
           Call or WhatsApp us for details, customisation, and orders.
         </p>
         <a
           href={`tel:+91${CONTACT_PHONE}`}
-          className="mt-3 inline-block text-lg font-semibold tracking-wide text-stone-900 hover:underline"
+          className="mt-3 inline-block break-all text-lg font-semibold tracking-wide text-stone-900 hover:underline"
         >
           +91 {CONTACT_PHONE}
         </a>
       </div>
 
-      <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+      <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed break-words text-amber-900">
         {PRODUCT_DELIVERY_MESSAGE}
       </p>
 

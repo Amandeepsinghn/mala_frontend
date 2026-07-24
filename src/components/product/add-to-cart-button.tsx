@@ -39,8 +39,8 @@ export function AddToCartButton({
     <Button
       size={size}
       className={cn(
-        "w-full rounded-md bg-stone-900 text-white hover:bg-stone-800",
-        size === "lg" && "py-3.5 text-base",
+        "w-full max-w-full whitespace-normal rounded-md bg-stone-900 text-white hover:bg-stone-800",
+        size === "lg" && "px-4 py-3.5 text-sm sm:text-base",
         className,
       )}
       disabled={loading}
