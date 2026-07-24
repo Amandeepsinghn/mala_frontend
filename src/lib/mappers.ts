@@ -1,5 +1,5 @@
 import { getCategoryImage } from "@/lib/category-images";
-import { parseDecimal } from "@/lib/utils";
+import { parseDecimal, parseOptionalDecimal } from "@/lib/utils";
 import type {
   CategoryResponse,
   ProductResponse,
@@ -75,6 +75,10 @@ export function mapProductDetail(
     color: api.color,
     style: api.style,
     roomType: api.room_type,
+    widthCm: parseOptionalDecimal(api.width_cm),
+    heightCm: parseOptionalDecimal(api.height_cm),
+    depthCm: parseOptionalDecimal(api.depth_cm),
+    weightKg: parseOptionalDecimal(api.weight_kg),
     inStock: api.is_active && api.stock_quantity > 0,
     stockQuantity: api.stock_quantity,
     featured: api.is_featured,

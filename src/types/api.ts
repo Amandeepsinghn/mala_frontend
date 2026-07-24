@@ -37,6 +37,11 @@ export interface ProductResponse {
   color: string | null;
   style: string | null;
   room_type: string | null;
+  width_cm: string | null;
+  height_cm: string | null;
+  depth_cm: string | null;
+  weight_kg: string | null;
+  extra_specs: string | null;
   is_featured: boolean;
   is_active: boolean;
   stock_quantity: number;

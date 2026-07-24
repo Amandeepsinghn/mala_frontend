@@ -21,7 +21,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative min-h-[70vh] overflow-hidden sm:min-h-[80vh]">
+      <section className="relative min-h-[calc(100svh-3.5rem)] overflow-hidden lg:min-h-[80vh]">
         <Image
           src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1920&q=80"
           alt="Modern living room with curated furniture"
@@ -32,16 +32,16 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-[#f5f1eb]/20" />
 
-        <div className="relative mx-auto flex min-h-[70vh] max-w-7xl flex-col items-center justify-center px-4 py-24 text-center sm:min-h-[80vh] sm:px-6 lg:px-8">
-          <p className="text-xs font-medium uppercase tracking-[0.35em] text-stone-900 sm:text-sm">
+        <div className="relative mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-7xl flex-col items-center justify-center px-5 py-16 text-center lg:min-h-[80vh] lg:px-8 lg:py-24">
+          <p className="max-w-[17rem] text-[10px] font-medium uppercase tracking-[0.22em] text-stone-900 lg:max-w-none lg:text-sm lg:tracking-[0.35em]">
             {SITE_NAME} · Crafted for your home
           </p>
-          <h1 className="mt-6 max-w-4xl text-4xl font-bold uppercase leading-tight tracking-tight text-stone-900 sm:text-5xl md:text-6xl lg:text-7xl">
+          <h1 className="mt-5 max-w-4xl text-[1.65rem] font-bold uppercase leading-[1.15] tracking-tight text-stone-900 sm:text-4xl lg:mt-6 lg:text-6xl xl:text-7xl">
             Furniture that feels like home
           </h1>
           <Link
             href="/products"
-            className="mt-10 rounded-full bg-stone-900 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-800"
+            className="mt-8 rounded-full bg-stone-900 px-7 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-800 lg:mt-10 lg:px-8"
           >
             Explore collection
           </Link>

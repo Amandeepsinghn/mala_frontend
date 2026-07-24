@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ProductActions } from "@/components/product/product-actions";
 import { CONTACT_PHONE, PRODUCT_DELIVERY_MESSAGE } from "@/lib/constants";
-import { formatPrice, getDiscountPercent } from "@/lib/utils";
+import { formatDimension, formatPrice, getDiscountPercent } from "@/lib/utils";
 import type { Product } from "@/types/product";
 
 interface ProductDetailPanelProps {
@@ -13,12 +13,9 @@ interface ProductDetailPanelProps {
 const SERVICE_HIGHLIGHTS = [
   "67 point quality inspection before delivery",
   "2 year warranty, no questions asked",
-  "Free delivery, zero hidden charges",
 ] as const;
 
 const TRUST_BADGES = [
-  { label: "Free worldwide shipping", icon: "🌍" },
-  { label: "60 days money-back guarantee", icon: "↩" },
   { label: "Premium craftsmanship", icon: "✦" },
 ] as const;
 
@@ -66,6 +63,47 @@ function AccordionItem({
       {isOpen && (
         <div className="pb-4 text-sm leading-relaxed text-stone-600">{content}</div>
       )}
+    </div>
+  );
+}
+
+function ProductDimensions({ product }: { product: Product }) {
+  const dimensions = [
+    product.widthCm != null && {
+      label: "Width",
+      value: `${formatDimension(product.widthCm)} cm`,
+    },
+    product.heightCm != null && {
+      label: "Height",
+      value: `${formatDimension(product.heightCm)} cm`,
+    },
+    product.depthCm != null && {
+      label: "Depth",
+      value: `${formatDimension(product.depthCm)} cm`,
+    },
+    product.weightKg != null && {
+      label: "Weight",
+      value: `${formatDimension(product.weightKg)} kg`,
+    },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  if (dimensions.length === 0) return null;
+
+  return (
+    <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
+      <p className="text-sm font-medium text-stone-900">Dimensions</p>
+      <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {dimensions.map((item) => (
+          <div key={item.label}>
+            <dt className="text-xs uppercase tracking-[0.12em] text-stone-500">
+              {item.label}
+            </dt>
+            <dd className="mt-1 text-sm font-semibold text-stone-900">
+              {item.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
@@ -147,6 +185,8 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
         ))}
       </ul>
 
+      <ProductDimensions product={product} />
+
       <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
         <p className="text-sm font-medium text-stone-900">Visit our factory</p>
         <p className="mt-1 text-sm text-stone-600">
@@ -173,7 +213,7 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
 
       <ProductActions product={product} />
 
-      <div className="mt-8 grid gap-4 border-t border-stone-200 pt-6 sm:grid-cols-3">
+      <div className="mt-8 flex justify-center border-t border-stone-200 pt-6">
         {TRUST_BADGES.map((badge) => (
           <div
             key={badge.label}

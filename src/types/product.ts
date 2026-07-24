@@ -14,6 +14,10 @@ export interface Product {
   color?: string | null;
   style?: string | null;
   roomType?: string | null;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  depthCm?: number | null;
+  weightKg?: number | null;
   inStock: boolean;
   stockQuantity?: number;
   featured?: boolean;
