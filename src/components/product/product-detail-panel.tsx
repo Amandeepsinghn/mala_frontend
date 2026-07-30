@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ProductActions } from "@/components/product/product-actions";
-import { CONTACT_PHONE, PRODUCT_DELIVERY_MESSAGE } from "@/lib/constants";
-import { formatDimension, formatPrice, getDiscountPercent } from "@/lib/utils";
-import type { Product } from "@/types/product";
+import {
+  CONTACT_PHONE,
+  KING_SIZE_DIMENSIONS,
+  PRODUCT_DELIVERY_MESSAGE,
+} from "@/lib/constants";
+import { cn, formatDimension, formatPrice, getDiscountPercent } from "@/lib/utils";
+import type { Product, ProductVariant, SeatingOption } from "@/types/product";
 
 interface ProductDetailPanelProps {
   product: Product;
@@ -16,9 +20,70 @@ const SERVICE_HIGHLIGHTS = [
   "Product is customizable according to customer needs",
 ] as const;
 
-const TRUST_BADGES = [
-  { label: "Premium craftsmanship", icon: "✦" },
-] as const;
+const TRUST_BADGES = [{ label: "Premium craftsmanship", icon: "✦" }] as const;
+
+function isSofaProduct(product: Product) {
+  return product.categorySlug === "sofas" || /sofa/i.test(product.category);
+}
+
+function isBedProduct(product: Product) {
+  return product.categorySlug === "beds" || /bed/i.test(product.category);
+}
+
+function getSofaSeatingOptions(product: Product): SeatingOption[] {
+  if (!isSofaProduct(product)) return [];
+
+  if ((product.seatingOptions?.length ?? 0) > 0) {
+    return product.seatingOptions ?? [];
+  }
+
+  // Fallback for older variant payloads that use seating_capacity
+  return (product.variants ?? [])
+    .filter((variant) => variant.isActive && variant.seatingCapacity != null)
+    .map((variant) => ({
+      variantId: variant.id,
+      seatingCapacity: variant.seatingCapacity as number,
+      label: `${variant.seatingCapacity} Seater`,
+      price: variant.price ?? product.price,
+      compareAtPrice: null,
+      currency: product.currency,
+      widthCm: variant.widthCm,
+      heightCm: variant.heightCm,
+      depthCm: variant.depthCm,
+      isActive: variant.isActive,
+    }));
+}
+
+function defaultSeatingOption(
+  product: Product,
+  options: SeatingOption[],
+): SeatingOption | null {
+  if (options.length === 0) return null;
+
+  const nameMatch = product.name.match(/(\d+)\s*-?\s*seater/i);
+  if (nameMatch) {
+    const seats = Number(nameMatch[1]);
+    const matched = options.find((option) => option.seatingCapacity === seats);
+    if (matched) return matched;
+  }
+
+  return options[0];
+}
+
+function seatingOptionToVariant(option: SeatingOption): ProductVariant {
+  return {
+    id: option.variantId,
+    sku: "",
+    name: option.label,
+    price: option.price,
+    seatingCapacity: option.seatingCapacity,
+    widthCm: option.widthCm,
+    heightCm: option.heightCm,
+    depthCm: option.depthCm,
+    stockQuantity: 0,
+    isActive: option.isActive,
+  };
+}
 
 function StarRating() {
   return (
@@ -70,51 +135,117 @@ function AccordionItem({
   );
 }
 
-function ProductDimensions({ product }: { product: Product }) {
+function ProductDimensions({
+  title = "Dimensions",
+  widthCm,
+  heightCm,
+  depthCm,
+  weightKg,
+  footnote,
+}: {
+  title?: string;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  depthCm?: number | null;
+  weightKg?: number | null;
+  footnote?: string;
+}) {
   const dimensions = [
-    product.widthCm != null && {
+    widthCm != null && {
       label: "Width",
-      value: `${formatDimension(product.widthCm)} cm`,
+      value: `${formatDimension(widthCm)} cm`,
     },
-    product.heightCm != null && {
+    heightCm != null && {
       label: "Height",
-      value: `${formatDimension(product.heightCm)} cm`,
+      value: `${formatDimension(heightCm)} cm`,
     },
-    product.depthCm != null && {
-      label: "Depth",
-      value: `${formatDimension(product.depthCm)} cm`,
+    depthCm != null && {
+      label: "Length",
+      value: `${formatDimension(depthCm)} cm`,
     },
-    product.weightKg != null && {
+    weightKg != null && {
       label: "Weight",
-      value: `${formatDimension(product.weightKg)} kg`,
+      value: `${formatDimension(weightKg)} kg`,
     },
   ].filter(Boolean) as { label: string; value: string }[];
 
-  if (dimensions.length === 0) return null;
+  if (dimensions.length === 0 && !footnote) return null;
 
   return (
     <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
-      <p className="text-sm font-medium text-stone-900">Dimensions</p>
-      <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {dimensions.map((item) => (
-          <div key={item.label}>
-            <dt className="text-xs uppercase tracking-[0.12em] text-stone-500">
-              {item.label}
-            </dt>
-            <dd className="mt-1 text-sm font-semibold text-stone-900">
-              {item.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <p className="text-sm font-medium text-stone-900">{title}</p>
+      {dimensions.length > 0 && (
+        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {dimensions.map((item) => (
+            <div key={item.label}>
+              <dt className="text-xs uppercase tracking-[0.12em] text-stone-500">
+                {item.label}
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-stone-900">
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {footnote && (
+        <p className="mt-3 text-sm leading-relaxed text-stone-600">{footnote}</p>
+      )}
     </div>
   );
 }
 
+function BedKingSizeDimensions({
+  product,
+  widthCm,
+  heightCm,
+  depthCm,
+}: {
+  product: Product;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  depthCm?: number | null;
+}) {
+  const hasApiDims = widthCm != null || heightCm != null || depthCm != null;
+
+  return (
+    <ProductDimensions
+      title="King Size dimensions"
+      widthCm={widthCm ?? (hasApiDims ? null : KING_SIZE_DIMENSIONS.widthCm)}
+      heightCm={heightCm}
+      depthCm={depthCm ?? (hasApiDims ? null : KING_SIZE_DIMENSIONS.lengthCm)}
+      weightKg={product.weightKg}
+      footnote={
+        hasApiDims
+          ? `Fits a ${KING_SIZE_DIMENSIONS.label.toLowerCase()} mattress (${KING_SIZE_DIMENSIONS.widthIn} × ${KING_SIZE_DIMENSIONS.lengthIn} in / ${KING_SIZE_DIMENSIONS.widthCm} × ${KING_SIZE_DIMENSIONS.lengthCm} cm).`
+          : `Standard ${KING_SIZE_DIMENSIONS.label.toLowerCase()} mattress size: ${KING_SIZE_DIMENSIONS.widthIn} × ${KING_SIZE_DIMENSIONS.lengthIn} in (${KING_SIZE_DIMENSIONS.widthCm} × ${KING_SIZE_DIMENSIONS.lengthCm} cm).`
+      }
+    />
+  );
+}
+
 export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
+  const seatingOptions = useMemo(
+    () => getSofaSeatingOptions(product),
+    [product],
+  );
+
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
+    () => defaultSeatingOption(product, seatingOptions)?.variantId ?? null,
+  );
   const [openSection, setOpenSection] = useState<string | null>("description");
 
-  const discount = getDiscountPercent(product.price, product.compareAtPrice);
+  const selectedOption =
+    seatingOptions.find((option) => option.variantId === selectedVariantId) ??
+    null;
+
+  const displayPrice = selectedOption?.price ?? product.price;
+  const displayCompareAt =
+    selectedOption?.compareAtPrice ?? product.compareAtPrice;
+  const discount = getDiscountPercent(displayPrice, displayCompareAt);
+  const selectedVariant = selectedOption
+    ? seatingOptionToVariant(selectedOption)
+    : null;
 
   const accordionSections = [
     {
@@ -151,7 +282,10 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
 
   return (
     <div className="flex min-w-0 flex-col overflow-hidden">
-      <h1 className="font-serif text-2xl font-semibold leading-snug break-words text-stone-900 sm:text-3xl lg:text-4xl">
+      <p className="text-xs font-medium uppercase tracking-[0.15em] text-stone-500">
+        Product ID {product.productId}
+      </p>
+      <h1 className="mt-2 font-serif text-2xl font-semibold leading-snug break-words text-stone-900 sm:text-3xl lg:text-4xl">
         {product.name}
       </h1>
 
@@ -161,12 +295,12 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
 
       <div className="mt-5 flex flex-wrap items-baseline gap-3">
         <p className="text-3xl font-bold text-stone-900">
-          {formatPrice(product.price, product.currency)}
+          {formatPrice(displayPrice, product.currency)}
         </p>
-        {product.compareAtPrice && product.compareAtPrice > product.price && (
+        {displayCompareAt && displayCompareAt > displayPrice && (
           <>
             <p className="text-lg text-stone-400 line-through">
-              {formatPrice(product.compareAtPrice, product.currency)}
+              {formatPrice(displayCompareAt, product.currency)}
             </p>
             {discount > 0 && (
               <span className="rounded-full bg-stone-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
@@ -176,6 +310,42 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
           </>
         )}
       </div>
+
+      {seatingOptions.length > 0 && (
+        <div className="mt-6">
+          <p className="text-sm font-medium text-stone-900">Select seater</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {seatingOptions.map((option) => {
+              const selected = option.variantId === selectedVariantId;
+              return (
+                <button
+                  key={option.variantId}
+                  type="button"
+                  onClick={() => setSelectedVariantId(option.variantId)}
+                  className={cn(
+                    "min-w-[7.5rem] rounded-xl border px-4 py-3 text-left transition-colors",
+                    selected
+                      ? "border-stone-900 bg-stone-900 text-white"
+                      : "border-stone-300 bg-white text-stone-900 hover:border-stone-500",
+                  )}
+                >
+                  <span className="block text-sm font-semibold">
+                    {option.label || `${option.seatingCapacity} Seater`}
+                  </span>
+                  <span
+                    className={cn(
+                      "mt-1 block text-sm",
+                      selected ? "text-white/85" : "text-stone-600",
+                    )}
+                  >
+                    {formatPrice(option.price, option.currency || product.currency)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <ul className="mt-6 space-y-3">
         {SERVICE_HIGHLIGHTS.map((item) => (
@@ -188,7 +358,23 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
         ))}
       </ul>
 
-      <ProductDimensions product={product} />
+      {!isBedProduct(product) && (
+        <ProductDimensions
+          widthCm={selectedOption?.widthCm ?? product.widthCm}
+          heightCm={selectedOption?.heightCm ?? product.heightCm}
+          depthCm={selectedOption?.depthCm ?? product.depthCm}
+          weightKg={product.weightKg}
+        />
+      )}
+
+      {isBedProduct(product) && (
+        <BedKingSizeDimensions
+          product={product}
+          widthCm={product.widthCm}
+          heightCm={product.heightCm}
+          depthCm={product.depthCm}
+        />
+      )}
 
       <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
         <p className="text-sm font-medium text-stone-900">Visit our factory</p>
@@ -214,7 +400,11 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
         {PRODUCT_DELIVERY_MESSAGE}
       </p>
 
-      <ProductActions product={product} />
+      <ProductActions
+        product={product}
+        selectedVariant={selectedVariant}
+        displayPrice={displayPrice}
+      />
 
       <div className="mt-8 flex justify-center border-t border-stone-200 pt-6">
         {TRUST_BADGES.map((badge) => (

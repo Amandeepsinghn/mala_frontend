@@ -14,6 +14,15 @@ export const INSTAGRAM_HANDLE = "@malaa_furnitures_kirtinagar";
 export const PRODUCT_DELIVERY_MESSAGE =
   "Each piece is made to order. Please allow 15–20 days for crafting and delivery — both included.";
 
+/** Standard Indian king-size mattress / bed footprint used when API dims are missing */
+export const KING_SIZE_DIMENSIONS = {
+  label: "King Size",
+  widthCm: 183,
+  lengthCm: 198,
+  widthIn: 72,
+  lengthIn: 78,
+} as const;
+
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/categories/sofas", label: "Sofa" },

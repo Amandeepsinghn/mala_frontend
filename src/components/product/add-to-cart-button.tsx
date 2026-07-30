@@ -4,10 +4,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 import { cn, formatPrice } from "@/lib/utils";
-import type { Product } from "@/types/product";
+import type { Product, ProductVariant } from "@/types/product";
 
 interface AddToCartButtonProps {
   product: Product;
+  selectedVariant?: ProductVariant | null;
+  displayPrice?: number;
+  quantity?: number;
   size?: "sm" | "md" | "lg";
   showPrice?: boolean;
   className?: string;
@@ -15,6 +18,9 @@ interface AddToCartButtonProps {
 
 export function AddToCartButton({
   product,
+  selectedVariant = null,
+  displayPrice,
+  quantity = 1,
   size = "lg",
   showPrice = true,
   className,
@@ -22,17 +28,20 @@ export function AddToCartButton({
   const { addItem } = useCart();
   const [loading, setLoading] = useState(false);
 
+  const unitPrice = displayPrice ?? selectedVariant?.price ?? product.price;
+  const totalPrice = unitPrice * quantity;
+
   async function handleAdd() {
     setLoading(true);
     try {
-      await addItem(product);
+      await addItem(product, quantity, selectedVariant);
     } finally {
       setLoading(false);
     }
   }
 
   const label = showPrice
-    ? `Add to cart ${formatPrice(product.price, product.currency)}`
+    ? `Add to cart ${formatPrice(totalPrice, product.currency)}`
     : "Add to cart";
 
   return (

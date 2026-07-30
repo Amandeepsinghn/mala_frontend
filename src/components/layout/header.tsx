@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+import { SearchForm } from "@/components/layout/search-form";
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/") {
@@ -220,22 +221,25 @@ export function Header() {
 
         {/* Laptop / desktop nav — unchanged */}
         <div className="hidden border-t border-stone-300/80 lg:block">
-          <nav className="flex items-center gap-x-8 py-4">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "text-xs font-medium uppercase tracking-[0.2em] transition-colors hover:text-stone-600",
-                  isNavActive(pathname, link.href)
-                    ? "text-stone-900"
-                    : "text-stone-900/80",
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex items-center justify-between gap-8 py-4">
+            <nav className="flex items-center gap-x-8">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "text-xs font-medium uppercase tracking-[0.2em] transition-colors hover:text-stone-600",
+                    isNavActive(pathname, link.href)
+                      ? "text-stone-900"
+                      : "text-stone-900/80",
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <SearchForm className="max-w-xs shrink-0" inputClassName="py-2" />
+          </div>
         </div>
       </div>
 
@@ -243,6 +247,12 @@ export function Header() {
       {menuOpen && (
         <div className="border-t border-stone-300/80 bg-[#f5f1eb] lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-4 py-2 sm:px-6">
+            <div className="py-3">
+              <SearchForm
+                onSubmitSuccess={() => setMenuOpen(false)}
+                inputClassName="py-2.5"
+              />
+            </div>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}

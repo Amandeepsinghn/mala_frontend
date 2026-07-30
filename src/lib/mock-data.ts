@@ -43,6 +43,7 @@ export const categories: Category[] = [
 export const products: Product[] = [
   {
     id: 1,
+    productId: 1,
     name: "Oslo Linen Sofa",
     slug: "oslo-linen-sofa",
     description:
@@ -69,6 +70,7 @@ export const products: Product[] = [
   },
   {
     id: 2,
+    productId: 2,
     name: "Nordic Oak Dining Table",
     slug: "nordic-oak-dining-table",
     description:
@@ -85,6 +87,7 @@ export const products: Product[] = [
   },
   {
     id: 3,
+    productId: 3,
     name: "Haven Accent Chair",
     slug: "haven-accent-chair",
     description:
@@ -101,6 +104,7 @@ export const products: Product[] = [
   },
   {
     id: 4,
+    productId: 4,
     name: "Mara Coffee Table",
     slug: "mara-coffee-table",
     description:
@@ -116,6 +120,7 @@ export const products: Product[] = [
   },
   {
     id: 5,
+    productId: 5,
     name: "Sage Velvet Sofa",
     slug: "sage-velvet-sofa",
     description:
@@ -131,6 +136,7 @@ export const products: Product[] = [
   },
   {
     id: 6,
+    productId: 6,
     name: "Luna Dining Chair",
     slug: "luna-dining-chair",
     description:

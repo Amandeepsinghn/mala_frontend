@@ -10,6 +10,8 @@ export interface ProductSummaryResponse {
   color: string | null;
   is_featured: boolean;
   primary_image_url: string | null;
+  seatingOptions?: SeatingOptionResponse[];
+  productId?: number;
 }
 
 export interface ProductImageResponse {
@@ -20,6 +22,37 @@ export interface ProductImageResponse {
   is_primary: boolean;
   sort_order: number;
   created_at: string;
+}
+
+export interface SeatingOptionResponse {
+  variantId: number;
+  seatingCapacity: number;
+  label: string;
+  price: string | null;
+  compare_at_price?: string | null;
+  currency?: string;
+  width_cm?: string | null;
+  height_cm?: string | null;
+  depth_cm?: string | null;
+  is_active?: boolean;
+}
+
+export interface ProductVariantResponse {
+  id: number;
+  sku: string;
+  name: string;
+  price: string | null;
+  color: string | null;
+  material: string | null;
+  size_label: string | null;
+  seating_capacity: number | null;
+  width_cm: string | null;
+  height_cm: string | null;
+  depth_cm: string | null;
+  stock_quantity: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProductResponse {
@@ -46,6 +79,9 @@ export interface ProductResponse {
   is_active: boolean;
   stock_quantity: number;
   images: ProductImageResponse[];
+  variants?: ProductVariantResponse[];
+  seatingOptions?: SeatingOptionResponse[];
+  productId?: number;
 }
 
 export interface CategoryResponse {
@@ -62,6 +98,14 @@ export interface CategoryProductsResponse {
   category: CategoryResponse;
   products: ProductSummaryResponse[];
   total: number;
+}
+
+export interface ProductSearchResponse {
+  query: string | null;
+  products: ProductSummaryResponse[];
+  total: number;
+  skip: number;
+  limit: number;
 }
 
 export interface CartItemResponse {

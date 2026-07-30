@@ -9,6 +9,7 @@ import type {
   CategoryProductsResponse,
   CategoryResponse,
   ProductResponse,
+  ProductSearchResponse,
   ProductSummaryResponse,
 } from "@/types/api";
 import type { Category } from "@/types/category";
@@ -134,5 +135,78 @@ export async function getProductsByCategory(
     }
     console.error(`[api] getProductsByCategory(${categorySlug}) failed:`, error);
     return null;
+  }
+}
+
+export interface SearchProductsParams {
+  q?: string;
+  category?: string;
+  material?: string;
+  color?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  skip?: number;
+  limit?: number;
+}
+
+export interface SearchProductsResult {
+  query: string | null;
+  products: Product[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+export async function searchProducts(
+  params: SearchProductsParams = {},
+): Promise<SearchProductsResult> {
+  const searchParams = new URLSearchParams();
+  if (params.q?.trim()) searchParams.set("q", params.q.trim());
+  if (params.category) searchParams.set("category", params.category);
+  if (params.material) searchParams.set("material", params.material);
+  if (params.color) searchParams.set("color", params.color);
+  if (params.minPrice != null) searchParams.set("min_price", String(params.minPrice));
+  if (params.maxPrice != null) searchParams.set("max_price", String(params.maxPrice));
+  searchParams.set("skip", String(params.skip ?? 0));
+  searchParams.set("limit", String(params.limit ?? 20));
+
+  try {
+    const data = await apiFetch<ProductSearchResponse>(
+      `/products/search?${searchParams}`,
+    );
+    return {
+      query: data.query,
+      products: data.products.map((p) => mapProductSummary(p)),
+      total: data.total,
+      skip: data.skip,
+      limit: data.limit,
+    };
+  } catch (error) {
+    if (USE_MOCK) {
+      const q = params.q?.trim().toLowerCase() ?? "";
+      const filtered = mockProducts.filter((p) => {
+        if (!q) return true;
+        return (
+          p.name.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+        );
+      });
+      return {
+        query: params.q?.trim() ?? null,
+        products: filtered,
+        total: filtered.length,
+        skip: params.skip ?? 0,
+        limit: params.limit ?? 20,
+      };
+    }
+    console.error("[api] searchProducts failed:", error);
+    return {
+      query: params.q?.trim() ?? null,
+      products: [],
+      total: 0,
+      skip: params.skip ?? 0,
+      limit: params.limit ?? 20,
+    };
   }
 }

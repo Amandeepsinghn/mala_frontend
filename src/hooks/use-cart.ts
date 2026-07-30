@@ -6,7 +6,7 @@ import { parseDecimal } from "@/lib/utils";
 import { useAuth, useLocalCart } from "@/hooks/use-auth";
 import type { CartItemResponse } from "@/types/api";
 import type { CartItem } from "@/types/cart";
-import type { Product } from "@/types/product";
+import type { Product, ProductVariant } from "@/types/product";
 
 function mapApiCartItem(item: CartItemResponse): CartItem {
   return {
@@ -14,6 +14,7 @@ function mapApiCartItem(item: CartItemResponse): CartItem {
     quantity: item.quantity,
     product: {
       id: item.product_id,
+      productId: item.product_id,
       name: item.product_name,
       slug: item.product_slug,
       description: "",
@@ -22,6 +23,8 @@ function mapApiCartItem(item: CartItemResponse): CartItem {
       images: item.primary_image_url ? [item.primary_image_url] : [],
       category: "",
       categorySlug: "",
+      selectedVariantId: item.variant_id,
+      selectedVariantName: item.variant_name,
       inStock: true,
     },
   };
@@ -35,11 +38,14 @@ export function useCart() {
   const [apiTotalItems, setApiTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const applyCartResponse = useCallback((items: CartItemResponse[], subtotal: string, totalItems: number) => {
-    setApiItems(items.map(mapApiCartItem));
-    setApiSubtotal(parseDecimal(subtotal));
-    setApiTotalItems(totalItems);
-  }, []);
+  const applyCartResponse = useCallback(
+    (items: CartItemResponse[], subtotal: string, totalItems: number) => {
+      setApiItems(items.map(mapApiCartItem));
+      setApiSubtotal(parseDecimal(subtotal));
+      setApiTotalItems(totalItems);
+    },
+    [],
+  );
 
   const refreshApiCart = useCallback(async () => {
     if (!token) return;
@@ -74,13 +80,21 @@ export function useCart() {
     };
   }, [token, applyCartResponse]);
 
-  const addItem = async (product: Product, quantity = 1) => {
+  const addItem = async (
+    product: Product,
+    quantity = 1,
+    variant: ProductVariant | null = null,
+  ) => {
     if (isAuthenticated && token) {
-      const cart = await addToCart(token, { product_id: product.id, quantity });
+      const cart = await addToCart(token, {
+        product_id: product.id,
+        variant_id: variant?.id ?? null,
+        quantity,
+      });
       applyCartResponse(cart.items, cart.subtotal, cart.total_items);
       return;
     }
-    localCart.addItem(product, quantity);
+    localCart.addItem(product, quantity, variant);
   };
 
   const items = isAuthenticated ? apiItems : localCart.items;

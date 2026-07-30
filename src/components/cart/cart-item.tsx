@@ -15,6 +15,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
   const { updateQuantity, removeItem, isAuthenticated } = useCart();
   const { product, quantity } = item;
   const image = product.images[0];
+  const variantId = product.selectedVariantId ?? null;
 
   return (
     <div className="flex gap-4 border-b border-stone-200 py-4">
@@ -45,6 +46,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
           >
             {product.name}
           </Link>
+          {product.selectedVariantName && (
+            <p className="text-sm text-stone-600">{product.selectedVariantName}</p>
+          )}
           {product.category && (
             <p className="text-sm text-stone-500">{product.category}</p>
           )}
@@ -56,7 +60,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => updateQuantity(product.id, quantity - 1)}
+                onClick={() => updateQuantity(product.id, quantity - 1, variantId)}
               >
                 −
               </Button>
@@ -64,7 +68,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => updateQuantity(product.id, quantity + 1)}
+                onClick={() => updateQuantity(product.id, quantity + 1, variantId)}
               >
                 +
               </Button>
@@ -83,7 +87,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           variant="ghost"
           size="sm"
           className="self-start text-stone-400 hover:text-red-600"
-          onClick={() => removeItem(product.id)}
+          onClick={() => removeItem(product.id, variantId)}
           aria-label={`Remove ${product.name}`}
         >
           ✕
