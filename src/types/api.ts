@@ -10,7 +10,9 @@ export interface ProductSummaryResponse {
   color: string | null;
   is_featured: boolean;
   primary_image_url: string | null;
-  seatingOptions?: SeatingOptionResponse[];
+  seatingOptions?: SeatingOptionResponse[] | null;
+  quantityOptions?: QuantityOptionResponse[] | null;
+  sideTableOptions?: SideTableOptionResponse[] | null;
   productId?: number;
 }
 
@@ -25,16 +27,57 @@ export interface ProductImageResponse {
 }
 
 export interface SeatingOptionResponse {
-  variantId: number;
-  seatingCapacity: number;
-  label: string;
+  variantId?: number;
+  variant_id?: number;
+  seatingCapacity?: number;
+  seating_capacity?: number;
+  label?: string;
   price: string | null;
   compare_at_price?: string | null;
+  compareAtPrice?: string | null;
   currency?: string;
   width_cm?: string | null;
   height_cm?: string | null;
   depth_cm?: string | null;
+  widthCm?: string | null;
+  heightCm?: string | null;
+  depthCm?: string | null;
   is_active?: boolean;
+  isActive?: boolean;
+}
+
+export interface QuantityOptionResponse {
+  variantId?: number;
+  variant_id?: number;
+  quantity?: number;
+  pack_quantity?: number;
+  label?: string;
+  price: string | null;
+  compare_at_price?: string | null;
+  compareAtPrice?: string | null;
+  currency?: string;
+  is_active?: boolean;
+  isActive?: boolean;
+}
+
+export interface SideTableOptionResponse {
+  variantId?: number;
+  variant_id?: number;
+  includesSideTable?: boolean | null;
+  includes_side_table?: boolean | null;
+  label?: string;
+  price: string | null;
+  compare_at_price?: string | null;
+  compareAtPrice?: string | null;
+  currency?: string;
+  width_cm?: string | null;
+  height_cm?: string | null;
+  depth_cm?: string | null;
+  widthCm?: string | null;
+  heightCm?: string | null;
+  depthCm?: string | null;
+  is_active?: boolean;
+  isActive?: boolean;
 }
 
 export interface ProductVariantResponse {
@@ -46,6 +89,8 @@ export interface ProductVariantResponse {
   material: string | null;
   size_label: string | null;
   seating_capacity: number | null;
+  pack_quantity?: number | null;
+  includes_side_table?: boolean | null;
   width_cm: string | null;
   height_cm: string | null;
   depth_cm: string | null;
@@ -80,7 +125,9 @@ export interface ProductResponse {
   stock_quantity: number;
   images: ProductImageResponse[];
   variants?: ProductVariantResponse[];
-  seatingOptions?: SeatingOptionResponse[];
+  seatingOptions?: SeatingOptionResponse[] | null;
+  quantityOptions?: QuantityOptionResponse[] | null;
+  sideTableOptions?: SideTableOptionResponse[] | null;
   productId?: number;
 }
 

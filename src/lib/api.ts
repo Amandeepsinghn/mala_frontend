@@ -138,6 +138,20 @@ export async function getProductsByCategory(
   }
 }
 
+export async function getSimilarProducts(
+  product: Product,
+  limit = 8,
+): Promise<Product[]> {
+  if (!product.categorySlug) return [];
+
+  const result = await getProductsByCategory(product.categorySlug);
+  if (!result) return [];
+
+  return result.products
+    .filter((item) => item.id !== product.id && item.slug !== product.slug)
+    .slice(0, limit);
+}
+
 export interface SearchProductsParams {
   q?: string;
   category?: string;

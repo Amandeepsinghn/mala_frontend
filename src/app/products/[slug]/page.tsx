@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductDetailPanel } from "@/components/product/product-detail-panel";
 import { ProductGallery } from "@/components/product/product-gallery";
-import { getProductBySlug } from "@/lib/api";
+import { SimilarProducts } from "@/components/product/similar-products";
+import { getProductBySlug, getSimilarProducts } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!product) notFound();
 
+  const similarProducts = await getSimilarProducts(product, 8);
+
   return (
     <div className="mx-auto w-full max-w-7xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-12 lg:px-8">
       <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-stone-500 sm:mb-8">
@@ -50,6 +53,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductGallery images={product.images} alt={product.name} />
         <ProductDetailPanel product={product} />
       </div>
+
+      <SimilarProducts
+        products={similarProducts}
+        categorySlug={product.categorySlug}
+        categoryName={product.category}
+      />
     </div>
   );
 }

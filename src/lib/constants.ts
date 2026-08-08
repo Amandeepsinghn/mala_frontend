@@ -6,7 +6,7 @@ export const SITE_DESCRIPTION =
 
 export const CONTACT_PHONE = "9899048933";
 export const CONTACT_ADDRESS =
-  "B-41, Timber Market, WHS, Kirti Nagar, New Delhi - 110015";
+  "B 41, 1st Floor, Timber Market, WHS, Kirti Nagar, New Delhi - 110015";
 export const GOOGLE_MAPS_URL = "https://share.google/SyJvCMSks8bBI930z";
 export const INSTAGRAM_URL =
   "https://www.instagram.com/malaa_furnitures_kirtinagar?igsh=MWI0OWRzMGVrcWVtaw==";
@@ -27,6 +27,7 @@ export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/categories/sofas", label: "Sofa" },
   { href: "/categories/beds", label: "Bed" },
-  { href: "/categories/tables", label: "Dining Table" },
+  { href: "/categories/dining-tables", label: "Dining Table" },
+  { href: "/categories/tables", label: "Table" },
   { href: "/categories/chairs", label: "Chair" },
 ] as const;

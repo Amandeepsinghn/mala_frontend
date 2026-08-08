@@ -12,9 +12,9 @@ export const categories: Category[] = [
   },
   {
     id: 2,
-    name: "Tables",
+    name: "Table",
     slug: "tables",
-    description: "Dining and coffee tables",
+    description: "Tables for home and office",
     image: CATEGORY_IMAGES.tables,
   },
   {
@@ -33,7 +33,7 @@ export const categories: Category[] = [
   },
   {
     id: 5,
-    name: "Dining Tables",
+    name: "Dining Table",
     slug: "dining-tables",
     description: "Dining tables for home and office",
     image: CATEGORY_IMAGES["dining-tables"],
@@ -80,7 +80,7 @@ export const products: Product[] = [
     images: [
       "https://images.unsplash.com/photo-1617806118233-18e1de247200?w=1200&q=80",
     ],
-    category: "Tables",
+    category: "Table",
     categorySlug: "tables",
     inStock: true,
     featured: true,
@@ -114,7 +114,7 @@ export const products: Product[] = [
     images: [
       "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=1200&q=80",
     ],
-    category: "Tables",
+    category: "Table",
     categorySlug: "tables",
     inStock: true,
   },

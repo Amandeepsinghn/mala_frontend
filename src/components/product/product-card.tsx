@@ -14,17 +14,43 @@ function isBedProduct(product: Product) {
   return product.categorySlug === "beds" || /bed/i.test(product.category);
 }
 
+function isChairProduct(product: Product) {
+  return product.categorySlug === "chairs" || /chair/i.test(product.category);
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const image = product.images[0];
-  const seatingOptions = product.seatingOptions ?? [];
+  const optionCount =
+    (product.quantityOptions?.length ?? 0) > 0
+      ? (product.quantityOptions?.length ?? 0) +
+        (product.quantityOptions?.some((option) => option.quantity === 1)
+          ? 0
+          : 1)
+      : (product.sideTableOptions?.length ?? 0) > 0
+        ? (product.sideTableOptions?.length ?? 0)
+        : (product.seatingOptions?.length ?? 0);
+  const optionPrices = [
+    ...(product.quantityOptions ?? []).map((option) => option.price),
+    ...(product.sideTableOptions ?? []).map((option) => option.price),
+    ...(product.seatingOptions ?? []).map((option) => option.price),
+  ];
   const startingPrice =
-    seatingOptions.length > 0
-      ? Math.min(...seatingOptions.map((option) => option.price))
-      : product.price;
-  const hasSeatingChoices = seatingOptions.length > 1;
+    optionPrices.length > 0 ? Math.min(...optionPrices, product.price) : product.price;
+  const hasOptionChoices = optionCount > 1;
   const isBed = isBedProduct(product);
+  const isChair = isChairProduct(product);
   const bedWidth = product.widthCm ?? KING_SIZE_DIMENSIONS.widthCm;
   const bedLength = product.depthCm ?? KING_SIZE_DIMENSIONS.lengthCm;
+  const optionCta = isChair
+    ? "Select quantity"
+    : isBed
+      ? "Select side table"
+      : "Select seater";
+  const optionHint = isChair
+    ? `${optionCount} quantity options`
+    : isBed
+      ? `${optionCount} side table options`
+      : `${optionCount} seater options`;
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-lg border border-stone-200 bg-white transition-shadow hover:shadow-md">
@@ -59,13 +85,11 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
           <p className="mt-2 text-sm font-semibold text-stone-900">
-            {hasSeatingChoices ? "From " : ""}
+            {hasOptionChoices ? "From " : ""}
             {formatPrice(startingPrice, product.currency)}
           </p>
-          {hasSeatingChoices && (
-            <p className="mt-1 text-xs text-stone-500">
-              {seatingOptions.length} seater options
-            </p>
+          {hasOptionChoices && (
+            <p className="mt-1 text-xs text-stone-500">{optionHint}</p>
           )}
           {isBed && (
             <p className="mt-1 text-xs text-stone-500">
@@ -76,12 +100,12 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
       <div className="mt-auto px-4 pb-4">
-        {hasSeatingChoices ? (
+        {hasOptionChoices ? (
           <Link
             href={`/products/${product.slug}`}
             className="inline-flex w-full items-center justify-center rounded-md bg-stone-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-stone-800"
           >
-            Select seater
+            {optionCta}
           </Link>
         ) : (
           <AddToCartButton product={product} size="sm" showPrice={false} />

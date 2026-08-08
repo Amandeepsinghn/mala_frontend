@@ -39,9 +39,10 @@ export const useCartStore = create<CartState>()(
           price: variant?.price ?? product.price,
           selectedVariantId: variantId,
           selectedVariantName:
-            variant?.seatingCapacity != null
+            variant?.name?.trim() ||
+            (variant?.seatingCapacity != null
               ? `${variant.seatingCapacity} Seater`
-              : variant?.name ?? null,
+              : null),
         };
 
         set((state) => {

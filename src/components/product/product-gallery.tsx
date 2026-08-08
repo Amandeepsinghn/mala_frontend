@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { cn } from "@/lib/utils";
 
 interface ProductGalleryProps {
@@ -66,13 +66,27 @@ function ImageLightbox({
   onIndexChange: (index: number) => void;
 }) {
   const hasMultiple = images.length > 1;
+  const [zoomed, setZoomed] = useState(false);
+  const [origin, setOrigin] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    setZoomed(false);
+    setOrigin({ x: 50, y: 50 });
+  }, [index]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        if (zoomed) {
+          setZoomed(false);
+          return;
+        }
+        onClose();
+      }
+      if (zoomed) return;
       if (event.key === "ArrowLeft" && hasMultiple) {
         onIndexChange(index === 0 ? images.length - 1 : index - 1);
       }
@@ -86,7 +100,23 @@ function ImageLightbox({
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [hasMultiple, images.length, index, onClose, onIndexChange]);
+  }, [hasMultiple, images.length, index, onClose, onIndexChange, zoomed]);
+
+  function updateOrigin(event: MouseEvent<HTMLDivElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    setOrigin({
+      x: Math.min(100, Math.max(0, x)),
+      y: Math.min(100, Math.max(0, y)),
+    });
+  }
+
+  function handleImageClick(event: MouseEvent<HTMLDivElement>) {
+    event.stopPropagation();
+    updateOrigin(event);
+    setZoomed((current) => !current);
+  }
 
   return (
     <div
@@ -119,7 +149,11 @@ function ImageLightbox({
         </svg>
       </button>
 
-      {hasMultiple && (
+      <p className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
+        {zoomed ? "Click to zoom out · drag cursor to pan" : "Click image to zoom in"}
+      </p>
+
+      {hasMultiple && !zoomed && (
         <>
           <button
             type="button"
@@ -147,14 +181,28 @@ function ImageLightbox({
       )}
 
       <div
-        className="relative h-[70vh] w-full max-w-5xl sm:h-[85vh] sm:mx-12"
-        onClick={(event) => event.stopPropagation()}
+        className={cn(
+          "relative h-[70vh] w-full max-w-5xl overflow-hidden sm:mx-12 sm:h-[85vh]",
+          zoomed ? "cursor-zoom-out" : "cursor-zoom-in",
+        )}
+        onClick={handleImageClick}
+        onMouseMove={(event) => {
+          if (zoomed) updateOrigin(event);
+        }}
       >
         <Image
           src={images[index]}
           alt={`${alt} - image ${index + 1}`}
           fill
-          className="object-contain"
+          className={cn(
+            "object-contain transition-transform duration-200 ease-out",
+            zoomed && "scale-[2.5]",
+          )}
+          style={
+            zoomed
+              ? { transformOrigin: `${origin.x}% ${origin.y}%` }
+              : { transformOrigin: "center center" }
+          }
           sizes="100vw"
           priority
         />
@@ -234,9 +282,9 @@ export function ProductGallery({ images, alt }: ProductGalleryProps) {
 
   return (
     <div className="w-full min-w-0">
-      {/* Mobile: main image full width, thumbs below */}
+      {/* Mobile / tablet: shorter image so details stay visible */}
       <div className="lg:hidden">
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-stone-100">
+        <div className="relative mx-auto aspect-[4/3] max-h-[42vh] w-full overflow-hidden rounded-xl bg-stone-100 sm:max-h-[46vh] md:aspect-[3/2] md:max-h-[44vh]">
           <button
             type="button"
             onClick={() => openLightbox(activeIndex)}

@@ -7,6 +7,8 @@ export interface ProductVariant {
   material?: string | null;
   sizeLabel?: string | null;
   seatingCapacity?: number | null;
+  packQuantity?: number | null;
+  includesSideTable?: boolean | null;
   widthCm?: number | null;
   heightCm?: number | null;
   depthCm?: number | null;
@@ -16,7 +18,30 @@ export interface ProductVariant {
 
 export interface SeatingOption {
   variantId: number;
-  seatingCapacity: number;
+  seatingCapacity: number | null;
+  label: string;
+  price: number;
+  compareAtPrice?: number | null;
+  currency: string;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  depthCm?: number | null;
+  isActive: boolean;
+}
+
+export interface QuantityOption {
+  variantId: number | null;
+  quantity: number;
+  label: string;
+  price: number;
+  compareAtPrice?: number | null;
+  currency: string;
+  isActive: boolean;
+}
+
+export interface SideTableOption {
+  variantId: number | null;
+  includesSideTable: boolean | null;
   label: string;
   price: number;
   compareAtPrice?: number | null;
@@ -50,6 +75,8 @@ export interface Product {
   weightKg?: number | null;
   variants?: ProductVariant[];
   seatingOptions?: SeatingOption[];
+  quantityOptions?: QuantityOption[];
+  sideTableOptions?: SideTableOption[];
   selectedVariantId?: number | null;
   selectedVariantName?: string | null;
   inStock: boolean;

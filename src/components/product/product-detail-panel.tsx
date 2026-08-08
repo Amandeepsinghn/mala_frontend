@@ -8,11 +8,31 @@ import {
   PRODUCT_DELIVERY_MESSAGE,
 } from "@/lib/constants";
 import { cn, formatDimension, formatPrice, getDiscountPercent } from "@/lib/utils";
-import type { Product, ProductVariant, SeatingOption } from "@/types/product";
+import type {
+  Product,
+  ProductVariant,
+  SeatingOption,
+  SideTableOption,
+} from "@/types/product";
 
 interface ProductDetailPanelProps {
   product: Product;
 }
+
+type ProductChoice = {
+  key: string;
+  variantId: number | null;
+  label: string;
+  price: number;
+  compareAtPrice?: number | null;
+  currency: string;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  depthCm?: number | null;
+  packQuantity?: number | null;
+  seatingCapacity?: number | null;
+  includesSideTable?: boolean | null;
+};
 
 const SERVICE_HIGHLIGHTS = [
   "67 point quality inspection before delivery",
@@ -30,59 +50,220 @@ function isBedProduct(product: Product) {
   return product.categorySlug === "beds" || /bed/i.test(product.category);
 }
 
-function getSofaSeatingOptions(product: Product): SeatingOption[] {
-  if (!isSofaProduct(product)) return [];
+function isChairProduct(product: Product) {
+  return product.categorySlug === "chairs" || /chair/i.test(product.category);
+}
 
-  if ((product.seatingOptions?.length ?? 0) > 0) {
-    return product.seatingOptions ?? [];
+function normalizeBedOptionLabel(raw: string) {
+  const text = raw.toLowerCase();
+  if (/without|not[- ]?side|no\s*side|w\/?o\b|without side/.test(text)) {
+    return "Without side table";
+  }
+  if (/with\s*side|side\s*table|w\/\s*side|with side/.test(text)) {
+    return "With side table";
+  }
+  return raw.trim();
+}
+
+function chairQuantityLabel(quantity: number) {
+  return quantity === 1 ? "1 Chair" : `${quantity} Chairs`;
+}
+
+function getChairChoices(product: Product): ProductChoice[] {
+  const fromApi = product.quantityOptions ?? [];
+  const choices: ProductChoice[] = [];
+
+  const hasSingle = fromApi.some((option) => option.quantity === 1);
+  if (!hasSingle && fromApi.length > 0) {
+    choices.push({
+      key: "qty-1",
+      variantId: null,
+      label: chairQuantityLabel(1),
+      price: product.price,
+      compareAtPrice: product.compareAtPrice,
+      currency: product.currency,
+      packQuantity: 1,
+    });
   }
 
-  // Fallback for older variant payloads that use seating_capacity
+  for (const option of fromApi) {
+    choices.push({
+      key: `qty-${option.quantity}-${option.variantId ?? "base"}`,
+      variantId: option.variantId,
+      label: option.label || chairQuantityLabel(option.quantity),
+      price: option.price,
+      compareAtPrice: option.compareAtPrice ?? product.compareAtPrice,
+      currency: option.currency || product.currency,
+      packQuantity: option.quantity,
+    });
+  }
+
+  if (choices.length === 0) {
+    // Fallback from pack_quantity variants
+    for (const variant of product.variants ?? []) {
+      if (variant.packQuantity == null) continue;
+      choices.push({
+        key: `qty-${variant.packQuantity}-${variant.id}`,
+        variantId: variant.id,
+        label:
+          variant.sizeLabel ||
+          variant.name ||
+          chairQuantityLabel(variant.packQuantity),
+        price: variant.price ?? product.price,
+        compareAtPrice: product.compareAtPrice,
+        currency: product.currency,
+        packQuantity: variant.packQuantity,
+      });
+    }
+  }
+
+  return choices.sort(
+    (a, b) => (a.packQuantity ?? 0) - (b.packQuantity ?? 0),
+  );
+}
+
+function getSofaChoices(product: Product): ProductChoice[] {
+  const options =
+    (product.seatingOptions?.length ?? 0) > 0
+      ? product.seatingOptions!
+      : (product.variants ?? [])
+          .filter((variant) => variant.seatingCapacity != null)
+          .map(
+            (variant): SeatingOption => ({
+              variantId: variant.id,
+              seatingCapacity: variant.seatingCapacity ?? null,
+              label: `${variant.seatingCapacity} Seater`,
+              price: variant.price ?? product.price,
+              compareAtPrice: null,
+              currency: product.currency,
+              widthCm: variant.widthCm,
+              heightCm: variant.heightCm,
+              depthCm: variant.depthCm,
+              isActive: variant.isActive,
+            }),
+          );
+
+  return options.map((option) => ({
+    key: `seat-${option.variantId}`,
+    variantId: option.variantId,
+    label: option.label || `${option.seatingCapacity} Seater`,
+    price: option.price,
+    compareAtPrice: option.compareAtPrice ?? product.compareAtPrice,
+    currency: option.currency || product.currency,
+    widthCm: option.widthCm,
+    heightCm: option.heightCm,
+    depthCm: option.depthCm,
+    seatingCapacity: option.seatingCapacity,
+  }));
+}
+
+function getBedChoices(product: Product): ProductChoice[] {
+  const fromApi = product.sideTableOptions ?? [];
+  if (fromApi.length > 0) {
+    return fromApi.map((option: SideTableOption) => ({
+      key: `side-${option.variantId ?? option.label}`,
+      variantId: option.variantId,
+      label: normalizeBedOptionLabel(option.label),
+      price: option.price,
+      compareAtPrice: option.compareAtPrice ?? product.compareAtPrice,
+      currency: option.currency || product.currency,
+      widthCm: option.widthCm,
+      heightCm: option.heightCm,
+      depthCm: option.depthCm,
+      includesSideTable: option.includesSideTable,
+    }));
+  }
+
   return (product.variants ?? [])
-    .filter((variant) => variant.isActive && variant.seatingCapacity != null)
+    .filter((variant) => variant.includesSideTable != null)
     .map((variant) => ({
+      key: `side-${variant.id}`,
       variantId: variant.id,
-      seatingCapacity: variant.seatingCapacity as number,
-      label: `${variant.seatingCapacity} Seater`,
+      label: normalizeBedOptionLabel(
+        variant.sizeLabel ||
+          variant.name ||
+          (variant.includesSideTable
+            ? "With side table"
+            : "Without side table"),
+      ),
       price: variant.price ?? product.price,
-      compareAtPrice: null,
+      compareAtPrice: product.compareAtPrice,
       currency: product.currency,
       widthCm: variant.widthCm,
       heightCm: variant.heightCm,
       depthCm: variant.depthCm,
-      isActive: variant.isActive,
+      includesSideTable: variant.includesSideTable,
     }));
 }
 
-function defaultSeatingOption(
-  product: Product,
-  options: SeatingOption[],
-): SeatingOption | null {
-  if (options.length === 0) return null;
-
-  const nameMatch = product.name.match(/(\d+)\s*-?\s*seater/i);
-  if (nameMatch) {
-    const seats = Number(nameMatch[1]);
-    const matched = options.find((option) => option.seatingCapacity === seats);
-    if (matched) return matched;
-  }
-
-  return options[0];
+function getProductChoices(product: Product): ProductChoice[] {
+  if (isChairProduct(product)) return getChairChoices(product);
+  if (isSofaProduct(product)) return getSofaChoices(product);
+  if (isBedProduct(product)) return getBedChoices(product);
+  return [];
 }
 
-function seatingOptionToVariant(option: SeatingOption): ProductVariant {
+function defaultChoice(
+  product: Product,
+  choices: ProductChoice[],
+): ProductChoice | null {
+  if (choices.length === 0) return null;
+
+  if (isChairProduct(product)) {
+    return choices.find((choice) => choice.packQuantity === 1) ?? choices[0];
+  }
+
+  if (isSofaProduct(product)) {
+    const seaterMatch = product.name.match(/(\d+)\s*-?\s*seater/i);
+    if (seaterMatch) {
+      const seats = Number(seaterMatch[1]);
+      const matched = choices.find((choice) => choice.seatingCapacity === seats);
+      if (matched) return matched;
+    }
+  }
+
+  if (isBedProduct(product)) {
+    return (
+      choices.find((choice) =>
+        /without|not[- ]?side|no\s*side/i.test(choice.label),
+      ) ?? choices[0]
+    );
+  }
+
+  return choices[0];
+}
+
+function choiceToVariant(
+  choice: ProductChoice,
+  product: Product,
+): ProductVariant | null {
+  if (choice.variantId == null) return null;
+
+  const existing = product.variants?.find(
+    (variant) => variant.id === choice.variantId,
+  );
+
   return {
-    id: option.variantId,
-    sku: "",
-    name: option.label,
-    price: option.price,
-    seatingCapacity: option.seatingCapacity,
-    widthCm: option.widthCm,
-    heightCm: option.heightCm,
-    depthCm: option.depthCm,
-    stockQuantity: 0,
-    isActive: option.isActive,
+    id: choice.variantId,
+    sku: existing?.sku ?? "",
+    name: choice.label,
+    price: choice.price,
+    seatingCapacity: choice.seatingCapacity ?? existing?.seatingCapacity ?? null,
+    packQuantity: choice.packQuantity ?? existing?.packQuantity ?? null,
+    includesSideTable:
+      choice.includesSideTable ?? existing?.includesSideTable ?? null,
+    widthCm: choice.widthCm ?? existing?.widthCm,
+    heightCm: choice.heightCm ?? existing?.heightCm,
+    depthCm: choice.depthCm ?? existing?.depthCm,
+    stockQuantity: existing?.stockQuantity ?? 0,
+    isActive: existing?.isActive ?? true,
   };
+}
+
+function getOptionSectionTitle(product: Product) {
+  if (isChairProduct(product)) return "Select quantity";
+  if (isBedProduct(product)) return "Side table option";
+  return "Select seater";
 }
 
 function StarRating() {
@@ -225,26 +406,24 @@ function BedKingSizeDimensions({
 }
 
 export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
-  const seatingOptions = useMemo(
-    () => getSofaSeatingOptions(product),
-    [product],
-  );
+  const choices = useMemo(() => getProductChoices(product), [product]);
+  const isBed = isBedProduct(product);
 
-  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
-    () => defaultSeatingOption(product, seatingOptions)?.variantId ?? null,
+  const [selectedKey, setSelectedKey] = useState<string | null>(
+    () => defaultChoice(product, getProductChoices(product))?.key ?? null,
   );
   const [openSection, setOpenSection] = useState<string | null>("description");
 
-  const selectedOption =
-    seatingOptions.find((option) => option.variantId === selectedVariantId) ??
-    null;
+  const selectedChoice =
+    choices.find((choice) => choice.key === selectedKey) ??
+    defaultChoice(product, choices);
 
-  const displayPrice = selectedOption?.price ?? product.price;
+  const displayPrice = selectedChoice?.price ?? product.price;
   const displayCompareAt =
-    selectedOption?.compareAtPrice ?? product.compareAtPrice;
+    selectedChoice?.compareAtPrice ?? product.compareAtPrice;
   const discount = getDiscountPercent(displayPrice, displayCompareAt);
-  const selectedVariant = selectedOption
-    ? seatingOptionToVariant(selectedOption)
+  const selectedVariant = selectedChoice
+    ? choiceToVariant(selectedChoice, product)
     : null;
 
   const accordionSections = [
@@ -311,17 +490,19 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
         )}
       </div>
 
-      {seatingOptions.length > 0 && (
+      {choices.length > 0 && (
         <div className="mt-6">
-          <p className="text-sm font-medium text-stone-900">Select seater</p>
+          <p className="text-sm font-medium text-stone-900">
+            {getOptionSectionTitle(product)}
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {seatingOptions.map((option) => {
-              const selected = option.variantId === selectedVariantId;
+            {choices.map((choice) => {
+              const selected = choice.key === selectedChoice?.key;
               return (
                 <button
-                  key={option.variantId}
+                  key={choice.key}
                   type="button"
-                  onClick={() => setSelectedVariantId(option.variantId)}
+                  onClick={() => setSelectedKey(choice.key)}
                   className={cn(
                     "min-w-[7.5rem] rounded-xl border px-4 py-3 text-left transition-colors",
                     selected
@@ -330,7 +511,7 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
                   )}
                 >
                   <span className="block text-sm font-semibold">
-                    {option.label || `${option.seatingCapacity} Seater`}
+                    {choice.label}
                   </span>
                   <span
                     className={cn(
@@ -338,7 +519,7 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
                       selected ? "text-white/85" : "text-stone-600",
                     )}
                   >
-                    {formatPrice(option.price, option.currency || product.currency)}
+                    {formatPrice(choice.price, choice.currency)}
                   </span>
                 </button>
               );
@@ -358,21 +539,21 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps) {
         ))}
       </ul>
 
-      {!isBedProduct(product) && (
+      {!isBed && (
         <ProductDimensions
-          widthCm={selectedOption?.widthCm ?? product.widthCm}
-          heightCm={selectedOption?.heightCm ?? product.heightCm}
-          depthCm={selectedOption?.depthCm ?? product.depthCm}
+          widthCm={selectedChoice?.widthCm ?? product.widthCm}
+          heightCm={selectedChoice?.heightCm ?? product.heightCm}
+          depthCm={selectedChoice?.depthCm ?? product.depthCm}
           weightKg={product.weightKg}
         />
       )}
 
-      {isBedProduct(product) && (
+      {isBed && (
         <BedKingSizeDimensions
           product={product}
-          widthCm={product.widthCm}
-          heightCm={product.heightCm}
-          depthCm={product.depthCm}
+          widthCm={selectedChoice?.widthCm ?? product.widthCm}
+          heightCm={selectedChoice?.heightCm ?? product.heightCm}
+          depthCm={selectedChoice?.depthCm ?? product.depthCm}
         />
       )}
 
